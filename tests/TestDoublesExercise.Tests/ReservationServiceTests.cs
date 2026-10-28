@@ -1,3 +1,5 @@
+using Moq;
+
 namespace TestDoublesExercise.Tests;
 
 public sealed class ReservationServiceTests
@@ -42,14 +44,22 @@ public sealed class ReservationServiceTests
     // Entfernt Skip jeweils erst, wenn ihr den Test implementiert habt.
     // Die Beispiele für Stub, Spy und Moq stehen in TestDoubleExamples.cs.
 
-    [Fact(Skip = "TODO: eigenen Verfügbarkeits-Stub schreiben")]
+    [Fact]
     public void Reserve_WithEnoughSeats_ReturnsTrue()
     {
+        
         // Arrange: Stub mit 3 freien Plätzen, Repository mit erfolgreichem Speichern,
         //          eigener Sender-Spy und ReservationService.
+        var availability = new Stub("Test 1", 3);
+        var repository = new Repo();
+        var sender = new Spionier();
+        var service = new ReservationService(availability, repository, sender);
+        
         // Act:     2 Plätze reservieren.
+
+        var result = service.Reserve("Simon.DwaynoX@gmail.com", "Test 1", 2);
         // Assert:  Ergebnis ist true.
-        throw new NotImplementedException();
+        Assert.True(result);
     }
 
     [Fact(Skip = "TODO: fehlende Verfügbarkeit prüfen")]
@@ -115,13 +125,20 @@ public sealed class ReservationServiceTests
         throw new NotImplementedException();
     }
 
-    [Fact(Skip = "TODO: Moq für fehlenden Speicherversuch verwenden")]
+    [Fact]
     public void Reserve_WithTooFewSeats_DoesNotCallRepository()
     {
         // Arrange: Stub mit zu wenigen Plätzen und Mock<IReservationRepository>.
+        var availability = new Stub("Test 1", 1);
+        var repository = new Mock<IReservationRepository>();
+        var sender = new  Spionier();
+        var service = new ReservationService(availability, repository.Object, sender);
+        
         // Act:     Reservierung versuchen.
+        var result = service.Reserve("Nokohashi.Samote@gmail.com","Test 1", 2);
         // Assert:  Verify(..., Times.Never()) für TrySave.
-        throw new NotImplementedException();
+        Assert.False(result);
+        repository.Verify(r => r.TrySave(It.IsAny<Reservation>()), Times.Never);
     }
 
     [Fact(Skip = "Fortgeschrittene: ReserveBatch zuerst implementieren")]
