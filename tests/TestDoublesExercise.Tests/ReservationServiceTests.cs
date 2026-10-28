@@ -2,6 +2,43 @@ namespace TestDoublesExercise.Tests;
 
 public sealed class ReservationServiceTests
 {
+
+    private sealed class Stub(IReadOnlyDictionary<string, int> availableSeatsByEventCode) : ISeatAvailability
+    {
+        public Stub(string eventCode, int availableSeats)
+            : this( new Dictionary<string, int> { [eventCode] = availableSeats })
+        {
+        }
+        
+        public int CallCount { get; private set; }
+
+        public int GetAvailableSeats(string eventCode)
+        {
+            CallCount++;    
+            return availableSeatsByEventCode.GetValueOrDefault(eventCode, 0);
+        }
+    }
+
+    private sealed class Repo(bool trySave = true) : IReservationRepository
+    {
+        public List<Reservation> savedReservation { get; } = [];
+        public bool TrySave(Reservation reservation)
+        {
+            savedReservation.Add(reservation);
+            return trySave;
+        }
+    }
+
+    private sealed class Spionier : IConfirmationSender
+    {
+        private readonly List<Reservation> _sentReservation = [];
+        public IReadOnlyList<Reservation> SentReservations => _sentReservation;
+        public void Send(Reservation reservation)
+        {
+            _sentReservation.Add(reservation);
+        }
+    }
+    
     // Entfernt Skip jeweils erst, wenn ihr den Test implementiert habt.
     // Die Beispiele für Stub, Spy und Moq stehen in TestDoubleExamples.cs.
 
