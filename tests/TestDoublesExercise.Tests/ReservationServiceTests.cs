@@ -94,9 +94,17 @@ public sealed class ReservationServiceTests
     public void Reserve_WithZeroSeats_ThrowsBeforeCallingDependencies()
     {
         // Arrange: Doubles, deren Aufrufe sich prüfen lassen.
+        var availability = new Stub("Test 1", 3);
+        var repository = new Repo();
+        var sender = new Spionier();
+        var service = new ReservationService(availability, repository, sender);
         // Act:     0 Plätze reservieren.
+        Action act = () => service.Reserve("Simon.DwaynoX@gmail.com", "Test 1", 0);
         // Assert:  ArgumentOutOfRangeException; keine Abhängigkeit wurde aufgerufen.
-        throw new NotImplementedException();
+        Assert.Throws<ArgumentOutOfRangeException>(act);
+        Assert.Equal(0, availability.CallCount);
+        Assert.Empty(repository.savedReservation);
+        Assert.Empty(sender.SentReservations);
     }
 
     [Fact(Skip = "TODO: negative Platzanzahl testen")]
