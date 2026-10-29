@@ -76,7 +76,7 @@ public sealed class ReservationServiceTests
         Assert.False(result);
     }
 
-    [Fact(Skip = "TODO: Grenzfall testen")]
+    [Fact]
     public void Reserve_WithExactlyEnoughSeats_Succeeds()
     {
         // Arrange: Stub mit genau 2 freien Plätzen.
@@ -90,7 +90,7 @@ public sealed class ReservationServiceTests
         Assert.True(result);
     }
 
-    [Fact(Skip = "TODO: Platzanzahl 0 testen")]
+    [Fact]
     public void Reserve_WithZeroSeats_ThrowsBeforeCallingDependencies()
     {
         // Arrange: Doubles, deren Aufrufe sich prüfen lassen.
@@ -107,40 +107,70 @@ public sealed class ReservationServiceTests
         Assert.Empty(sender.SentReservations);
     }
 
-    [Fact(Skip = "TODO: negative Platzanzahl testen")]
+    [Fact]
     public void Reserve_WithNegativeSeats_ThrowsBeforeCallingDependencies()
     {
         // Arrange: Doubles, deren Aufrufe sich prüfen lassen.
+        var availability = new Stub("Test 1", 3);
+        var repository = new Repo();
+        var sender = new Spionier();
+        var service = new ReservationService(availability, repository, sender);
         // Act:     -1 Plätze reservieren.
+        Action act = () => service.Reserve("Simon.DwaynoX@gmail.com", "Test 1", -1);
         // Assert:  ArgumentOutOfRangeException; keine Abhängigkeit wurde aufgerufen.
-        throw new NotImplementedException();
+        Assert.Throws<ArgumentOutOfRangeException>(act);
+        Assert.Equal(0, availability.CallCount);
+        Assert.Empty(repository.savedReservation);
+        Assert.Empty(sender.SentReservations);
     }
 
-    [Fact(Skip = "TODO: leeren Veranstaltungscode testen")]
+    [Fact]
     public void Reserve_WithEmptyEventCode_ThrowsBeforeCallingDependencies()
     {
         // Arrange: Doubles, deren Aufrufe sich prüfen lassen.
+        var availability = new Stub("Test 1", 3);
+        var repository = new Repo();
+        var sender = new Spionier();
+        var service = new ReservationService(availability, repository, sender);
         // Act:     Mit leerem Veranstaltungscode reservieren.
+        Action act = () => service.Reserve("Simon.DwaynoX@gmail.com", "", 2);
         // Assert:  ArgumentException; keine Abhängigkeit wurde aufgerufen.
-        throw new NotImplementedException();
+        Assert.Throws<ArgumentException>(act);
+        Assert.Equal(0, availability.CallCount);
+        Assert.Empty(repository.savedReservation);
+        Assert.Empty(sender.SentReservations);
     }
 
-    [Fact(Skip = "TODO: E-Mail-Adresse aus Leerzeichen testen")]
+    [Fact]
     public void Reserve_WithWhitespaceEmail_ThrowsBeforeCallingDependencies()
     {
         // Arrange: Handgeschriebene Doubles oder Moq gezielt auswählen.
+        var availability = new Stub("Test 1", 3);
+        var repository = new Repo();
+        var sender = new Spionier();
+        var service = new ReservationService(availability, repository, sender);
         // Act:     Mit einer E-Mail-Adresse aus Leerzeichen reservieren.
+        Action act = () => service.Reserve("   ", "Test 1", 2);
         // Assert:  ArgumentException; keine Abhängigkeit wurde aufgerufen.
-        throw new NotImplementedException();
+        Assert.Throws<ArgumentException>(act);
+        Assert.Equal(0, availability.CallCount);
+        Assert.Empty(repository.savedReservation);
+        Assert.Empty(sender.SentReservations);
     }
 
-    [Fact(Skip = "TODO: fehlgeschlagenes Speichern testen")]
+    [Fact]
     public void Reserve_WhenSavingFails_DoesNotSendConfirmation()
     {
         // Arrange: Stub mit genügend Plätzen, Repository liefert false, eigener Spy.
+        var availability = new Stub("Test 1", 3);
+        var repository = new Repo(false);
+        var sender = new Spionier();
+        var service = new ReservationService(availability, repository, sender);
         // Act:     Reservierung versuchen.
+        var result = service.Reserve("Simon.DwaynoX@gmail.com", "Test 1", 2);
         // Assert:  Ergebnis ist false und der Spy hat keinen Aufruf aufgezeichnet.
-        throw new NotImplementedException();
+        Assert.False(result);
+        Assert.Empty(sender.SentReservations);
     }
 
     [Fact]
